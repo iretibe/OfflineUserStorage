@@ -1,0 +1,55 @@
+﻿@page "/"
+@inject ILocalStorageService localStogae
+
+<PageTitle>Home</PageTitle>
+
+<h1>User List!</h1>
+
+@if (users is not null)
+{
+    <ol>
+        @foreach (var item in users)
+        {
+            <li>@item.Name</li>
+        }
+    </ol>
+}
+
+
+<h2>Add User</h2>
+<EditForm Model="newUser" OnValidSubmit="AddUser">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="newUser.Name">User Name</label>
+        <InputText id="newUser.Name" class="form-control" @bind-Value="newUser.Name" />
+        <ValidationMessage For="@(() => newUser.Name)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add</button>
+</EditForm>
+
+@code {
+    private List<UserModel> users;
+    private UserModel newUser = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await localStogae.GetItemAsync<List<UserModel>>("users");
+
+        if (users is null)
+        {
+            users = new();
+            //await localStogae.SetItemAsync("users", users);
+        }
+    }
+
+    private async Task AddUser()
+    {
+        users.Add(newUser);
+        newUser = new();
+
+        await localStogae.SetItemAsync("users", users);
+    }
+}
